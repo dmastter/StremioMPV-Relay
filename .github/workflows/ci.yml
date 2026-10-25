@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # ffmpeg only generates the test media. gyan.dev release build (linked from ffmpeg.org), pinned by hash
+  FFMPEG_TAG: '9.0.2'
+  FFMPEG_ASSET: ffmpeg-9.0.2-essentials_build.7z
+  FFMPEG_SHA256: 4705843ccaaf54257c16ad90f3e952ece33c17df964ecf7bfdbb0f49c7171077
+  PSSA_VERSION: '1.24.0'
+
+jobs:
+  lint:
+    name: PowerShell 5.1 parse and PSScriptAnalyzer
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install PSScriptAnalyzer
+        shell: powershell
+        run: |
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer | Where-Object { "$($_.Version)" -eq $env:PSSA_VERSION })) {
+            Install-Module PSScriptAnalyzer -RequiredVersion $env:PSSA_VERSION -Scope CurrentUser -Repository PSGallery -Force
+          }
+
+      - name: Lint every .ps1 under Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          Import-Module PSScriptAnalyzer -RequiredVersion $env:PSSA_VERSION
+          .\tests\lint.ps1 -RequireAnalyzer
+
+  tests:
+    name: Track script and network tests
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Get the pinned mpv and ffmpeg (SHA-256 checked)
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          .\tests\ci\get-tools.ps1 -Dest "$env:RUNNER_TEMP\tools"
+          -FfmpegTag $env:FFMPEG_TAG -FfmpegAsset $env:FFMPEG_ASSET -FfmpegSha256 $env:FFMPEG_SHA256
+
+      - name: Run the tests
+        shell: powershell
+        run: >
+          .\tests\run-all.ps1 -SkipLint
+          -Mpv "$env:RUNNER_TEMP\tools\mpv\mpv.com"
+          -Ffmpeg "$env:RUNNER_TEMP\tools\ffmpeg\ffmpeg.exe"
+          -Python (Get-Command python).Source
+          -WorkDir "$env:RUNNER_TEMP\stremiompv-relay-tests"
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-logs
+          path: ${{ runner.temp }}/stremiompv-relay-tests/logs
+          if-no-files-found: ignore
+          retention-days: 14

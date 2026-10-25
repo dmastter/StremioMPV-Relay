@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/dmastter/StremioMPV-Relay/blob/main/SECURITY.md
+    about: Please report security problems privately, as described in SECURITY.md, and not in a public issue.
+  - name: Bug in Stremio itself
+    url: https://github.com/Stremio/stremio-bugs/issues
+    about: Problems that also happen with the official, unpatched Stremio belong to Stremio.

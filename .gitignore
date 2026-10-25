@@ -1,0 +1,7 @@
+# never commit build outputs or downloaded binaries
+*.exe
+*.dll
+*.7z
+*.zip
+*.log
+state.json

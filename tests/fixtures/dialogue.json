@@ -1,0 +1,127 @@
+{
+  "_note": "original lines written for these tests, with our own translations; 'intro' is shown once, 'body' repeats",
+  "en": {
+    "body": [
+      "Where did you put the keys this time?",
+      "I left them on the table by the door.",
+      "Well, they are not there now, I looked.",
+      "Maybe the cat took them again.",
+      "Come on, that cat can't even open a drawer.",
+      "Okay, let me check my coat one more time.",
+      "We have to leave in ten minutes, you know.",
+      "I know, I know. Just give me a second.",
+      "Found them! They were in my pocket the whole time.",
+      "Of course they were. Let's go.",
+      "Do you think the shop is still open?",
+      "If we hurry, yes. It closes at six.",
+      "Then why are we still standing here?",
+      "Good question. Grab your bag and come on."
+    ]
+  },
+  "typo": {
+    "body": [
+      "“Where did you put the keys this time?”",
+      "I left them on the table… by the door.",
+      "Well, they’re not there now — I looked.",
+      "♪ Maybe the cat took them again ♪",
+      "Come on, that cat can’t even open a drawer.",
+      "Okay… let me check my coat one more time.",
+      "We have to leave in ten minutes, you know.",
+      "I know, I know — just give me a second.",
+      "Found them! They were in my pocket the whole time.",
+      "Of course they were. Let’s go.",
+      "Do you think the shop’s still open?",
+      "If we hurry, yes. It closes at six.",
+      "Then why are we still standing here?",
+      "Good question — grab your bag and come on."
+    ]
+  },
+  "sdh": {
+    "intro": [
+      "[thunder rumbling]",
+      "[rain tapping on the window]",
+      "(floorboards creaking)",
+      "[door creaks open]",
+      "[footsteps approaching]"
+    ],
+    "body": [
+      "WOMAN: Where did you put the keys this time?",
+      "MAN: [sighs] I left them on the table by the door.",
+      "Well, they are not there now, I looked.",
+      "[cat meows]",
+      "Maybe the cat took them again.",
+      "Come on, that cat can't even open a drawer.",
+      "(rummaging through pockets)",
+      "Okay, let me check my coat one more time.",
+      "WOMAN: We have to leave in ten minutes, you know.",
+      "I know, I know. Just give me a second.",
+      "[keys jingling]",
+      "Found them! They were in my pocket the whole time.",
+      "Of course they were. Let's go.",
+      "[door closes]"
+    ]
+  },
+  "cz": {
+    "body": [
+      "Kam jsi tentokrát dal ty klíče?",
+      "Nechal jsem je na stolečku u dveří.",
+      "No, teď tam už nejsou, díval jsem se všude.",
+      "Možná je zase vzala kočka.",
+      "Ale no tak, ta kočka neumí ani otevřít šuplík.",
+      "Dobře, ještě jednou se podívám do kabátu.",
+      "Musíme odejít za deset minut, víš.",
+      "Já vím, já vím. Dej mi chviličku.",
+      "Mám je! Celou dobu byly v mé kapse, věř mi.",
+      "No jasně, že byly. Pojďme.",
+      "Myslíš, že obchod je ještě otevřený?",
+      "Když si pospíšíme, tak ano. Zavírá v šest.",
+      "Tak proč tu pořád stojíme?",
+      "Dobrá otázka. Vezmi si tašku a pojď."
+    ]
+  },
+  "el": {
+    "body": [
+      "Πού έβαλες τα κλειδιά αυτή τη φορά;",
+      "Τα άφησα στο τραπέζι δίπλα στην πόρτα.",
+      "Λοιπόν, δεν είναι εκεί τώρα, κοίταξα.",
+      "Ίσως τα πήρε πάλι η γάτα.",
+      "Έλα τώρα, η γάτα δεν ανοίγει ούτε συρτάρι.",
+      "Εντάξει, θα ψάξω το παλτό μου άλλη μια φορά.",
+      "Πρέπει να φύγουμε σε δέκα λεπτά, το ξέρεις.",
+      "Το ξέρω, το ξέρω. Δώσε μου ένα λεπτό.",
+      "Τα βρήκα! Ήταν στην τσέπη μου όλη την ώρα.",
+      "Φυσικά και ήταν. Πάμε.",
+      "Λες να είναι ακόμα ανοιχτό το μαγαζί;",
+      "Αν βιαστούμε, ναι. Κλείνει στις έξι.",
+      "Τότε γιατί στεκόμαστε ακόμα εδώ;",
+      "Καλή ερώτηση. Πάρε την τσάντα σου και πάμε."
+    ]
+  },
+  "zh": {
+    "body": [
+      "这次你把钥匙放哪儿了？",
+      "我把它们放在门边的桌子上了。",
+      "可是现在不在那里，我看过了。",
+      "也许又是猫拿走了。",
+      "得了吧，那只猫连抽屉都打不开。",
+      "好吧，我再看一下我的外套。",
+      "你知道的，我们十分钟后就得走。",
+      "我知道，我知道。给我一秒钟。",
+      "找到了！一直在我的口袋里。",
+      "当然了。我们走吧。",
+      "你觉得商店还开着吗？",
+      "如果我们快点，是的。六点关门。",
+      "那我们为什么还站在这里？",
+      "好问题。拿上你的包，走吧。"
+    ]
+  },
+  "signs": {
+    "body": ["NORTH STATION", "[door creaks]", "CLOSED", "- Huh?"]
+  },
+  "sparse": {
+    "body": ["[door slams]", "- Huh?", "Fine.", "Wait."]
+  },
+  "sparse3": {
+    "body": ["Hmm.", "Okay.", "Go on."]
+  }
+}

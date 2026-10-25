@@ -1,0 +1,18 @@
+diff --git a/src/stremio_app/stremio_player/player.rs b/src/stremio_app/stremio_player/player.rs
+index 7a1c2ee..e444bd5 100644
+--- a/src/stremio_app/stremio_player/player.rs
++++ b/src/stremio_app/stremio_player/player.rs
+@@ -416,6 +416,13 @@ fn create_mpv(window_handle: HWND) -> Mpv {
+                     .expect(concat!("failed to set ", $name));
+             };
+         }
++        // StremioMPV Relay: load the user's mpv.conf and scripts from %APPDATA%\stremio-mpv
++        if let Ok(appdata) = std::env::var("APPDATA") {
++            let config_dir = format!("{}\\stremio-mpv", appdata);
++            set_property!("config-dir", config_dir.as_str());
++            set_property!("config", "yes");
++            set_property!("load-scripts", "yes");
++        }
+         set_property!("wid", window_handle as i64);
+         set_property!("title", "Stremio");
+         set_property!("audio-client-name", "Stremio");

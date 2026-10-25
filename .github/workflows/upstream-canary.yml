@@ -1,0 +1,132 @@
+name: Upstream canary
+
+# daily check that the patch still applies to the newest stremio-shell-ng tag and that it still builds.
+# on failure it opens (or comments on) one tracking issue; when it passes again it closes that issue.
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'stremio-shell-ng tag to test (empty = newest)'
+        required: false
+        default: ''
+
+permissions: {}
+
+concurrency:
+  group: upstream-canary
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: https://github.com/Stremio/stremio-shell-ng.git
+  ISSUE_TITLE: 'Upstream canary: the patch or build fails on the newest stremio-shell-ng'
+
+jobs:
+  canary:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Find the newest upstream tag
+        id: tag
+        shell: pwsh
+        env:
+          WANTED: ${{ inputs.tag }}
+        run: |
+          $tags = @(git ls-remote --tags --refs $env:UPSTREAM) -replace '^.*refs/tags/', ''
+          if ($LASTEXITCODE -ne 0 -or -not $tags) { throw 'could not list the upstream tags' }
+          if ($env:WANTED) {
+            if ($tags -notcontains $env:WANTED) { throw "tag $env:WANTED not found upstream" }
+            $tag = $env:WANTED
+          } else {
+            # highest vX.Y.Z; a plain tag wins over a suffixed one like v5.0.18-dl
+            $tag = $tags | Where-Object { $_ -match '^v\d+\.\d+\.\d+(-[\w.-]+)?$' } |
+              Sort-Object { [version]($_ -replace '^v(\d+\.\d+\.\d+).*$', '$1') }, { $_ -notmatch '-' } |
+              Select-Object -Last 1
+          }
+          if (-not $tag) { throw 'no release tag found upstream' }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          Write-Host "testing $tag"
+
+      - name: Clone it
+        id: clone
+        shell: pwsh
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          git -c advice.detachedHead=false clone --quiet --depth 1 --branch $env:TAG $env:UPSTREAM "$env:RUNNER_TEMP\shell"
+          if ($LASTEXITCODE -ne 0) { throw "git clone of $env:TAG failed" }
+          "commit=$(git -C "$env:RUNNER_TEMP\shell" rev-parse HEAD)" >> $env:GITHUB_OUTPUT
+
+      - name: Apply the patch (tools\apply-patch.ps1, Windows PowerShell 5.1)
+        id: patch
+        shell: powershell
+        run: |
+          .\tools\apply-patch.ps1 -Source "$env:RUNNER_TEMP\shell"
+          $player = "$env:RUNNER_TEMP\shell\src\stremio_app\stremio_player\player.rs"
+          if (-not (Select-String -LiteralPath $player -Pattern 'StremioMPV Relay' -SimpleMatch -Quiet)) { throw 'player.rs has no patch marker after apply-patch.ps1' }
+
+      - name: Build (cargo, x86_64-pc-windows-msvc)
+        id: build
+        shell: pwsh
+        working-directory: ${{ runner.temp }}/shell
+        run: |
+          rustup toolchain install stable --profile minimal --target x86_64-pc-windows-msvc
+          if ($LASTEXITCODE -ne 0) { throw 'rustup failed' }
+          rustup default stable
+          cargo --version
+          # same as install.ps1: --locked first, then without it
+          cargo build --release --locked --target x86_64-pc-windows-msvc
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host '::warning::the build with --locked failed; retrying without it, as install.ps1 does'
+            cargo build --release --target x86_64-pc-windows-msvc
+            if ($LASTEXITCODE -ne 0) { throw 'cargo build failed' }
+          }
+          if (-not (Test-Path target\x86_64-pc-windows-msvc\release\stremio-shell-ng.exe)) { throw 'stremio-shell-ng.exe was not produced' }
+
+      - name: Open or update the tracking issue
+        if: failure()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          COMMIT: ${{ steps.clone.outputs.commit }}
+          STAGE: ${{ steps.patch.outcome == 'failure' && 'applying the patch' || steps.build.outcome == 'failure' && 'building' || 'preparing (tag lookup or clone)' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          $body = @(
+            "The upstream canary failed while **$env:STAGE**.",
+            '',
+            "- stremio-shell-ng tag: ``$(if ($env:TAG) { $env:TAG } else { 'unknown' })``$(if ($env:COMMIT) { " ($env:COMMIT)" })",
+            "- run: $env:RUN_URL",
+            '',
+            'If the patch no longer applies, see "If the patch doesn''t apply" in AGENTS.md.'
+          ) -join "`n"
+          $file = Join-Path $env:RUNNER_TEMP 'issue-body.md'
+          Set-Content -LiteralPath $file -Value $body -Encoding utf8NoBOM
+          $open = gh issue list --repo $env:GITHUB_REPOSITORY --state open --limit 500 --json number,title | ConvertFrom-Json |
+            Where-Object { $_.title -eq $env:ISSUE_TITLE } | Select-Object -First 1
+          if ($open) { gh issue comment $open.number --repo $env:GITHUB_REPOSITORY --body-file $file }
+          else { gh issue create --repo $env:GITHUB_REPOSITORY --title $env:ISSUE_TITLE --body-file $file }
+          if ($LASTEXITCODE -ne 0) { throw 'could not open or update the issue' }
+
+      - name: Close the tracking issue once it passes again
+        if: success()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          $open = gh issue list --repo $env:GITHUB_REPOSITORY --state open --limit 500 --json number,title | ConvertFrom-Json |
+            Where-Object { $_.title -eq $env:ISSUE_TITLE } | Select-Object -First 1
+          if ($open) {
+            gh issue close $open.number --repo $env:GITHUB_REPOSITORY --comment "The canary passes again with ``$env:TAG``."
+          }

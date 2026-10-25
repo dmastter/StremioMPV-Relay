@@ -1,0 +1,54 @@
+name: Bug report
+description: Something went wrong while installing, or Stremio misbehaves after patching.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Stream links can contain your debrid API key, so please never paste links, keys or the playback log here.
+
+        Problems that also happen with the official, unpatched Stremio belong to Stremio: https://github.com/Stremio/stremio-bugs/issues
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Installer (install.cmd or install.ps1)
+        - Playback stalls or stops
+        - Wrong audio or subtitles
+        - Stremio broke after patching
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what happened instead. For installer problems, paste the last lines of the install.cmd window.
+    validations:
+      required: true
+  - type: input
+    id: release
+    attributes:
+      label: Release name
+      description: For stalls or wrong tracks, the name of the release you played as Stremio shows it, without any link.
+      placeholder: Show.Name.S01E02.1080p.WEB-DL.DDP5.1.H.264-GROUP
+  - type: textarea
+    id: diagnose
+    attributes:
+      label: Output of tools\diagnose.ps1
+      description: |
+        In PowerShell, in this repo's folder, run:
+        powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\diagnose.ps1
+        Then paste the whole stremio-mpv-diagnose.txt it saves on your Desktop. For wrong tracks, run it while the video is playing.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I removed every URL and key from this report.
+          required: true
+        - label: In Stremio, Settings > Player > "Play in external player" is set to Disabled.
+          required: true

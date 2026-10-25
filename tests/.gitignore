@@ -1,0 +1,6 @@
+# test media and logs are generated (by default outside the repo); never commit them
+*.mkv
+*.srt
+*.part
+results.json
+__pycache__/
